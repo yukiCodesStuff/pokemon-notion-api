@@ -2,35 +2,9 @@ const axios = require('axios')
 const { Client } = require('@notionhq/client')
 require('dotenv').config()
 
-
-console.log(`***API_KEY: ${process.env.NOTION_KEY}***`)
-// console.log(process.env)
-
 const notion = new Client({
     auth: process.env.NOTION_KEY,
 });
-
-// (async () => {
-//     const response = await notion.search({
-//       query: 'External tasks',
-//       filter: {
-//         value: 'database',
-//         property: 'object'
-//       },
-//       sort: {
-//         direction: 'ascending',
-//         timestamp: 'last_edited_time'
-//       },
-//     });
-//     console.log(response);
-//   })();
-
-// (async () => {
-//     const databaseId = process.env.NOTION_DATABASE_ID;
-//     console.log("Fetching database")
-//     const response = await notion.databases.retrieve({ database_id: databaseId });
-//     console.log(response);
-// })();
 
 const pokeArr = []
 
@@ -40,8 +14,8 @@ function capitalizeFirst(name) {
     return firstLetter.toUpperCase() + remainingName
 }
 
-async function getPokemon() {
-    await axios.get('https://pokeapi.co/api/v2/pokemon/rayquaza')
+async function getPokemon(pokeId) {
+    await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokeId}`)
         .then((poke) => {
             
 
@@ -67,10 +41,8 @@ async function getPokemon() {
             console.log(error)
         })
 
-        createNotionPage()
+        // createNotionPage()
 }
-
-getPokemon()
 
 async function createNotionPage() {
     for (let pokemon of pokeArr) {
@@ -123,6 +95,17 @@ async function createNotionPage() {
             }
         })
 
-        console.log(response)
+        // console.log(response)
     }
 }
+
+// This is to ensure that createNotionPage is called only after
+// al the getPokemon requests have been completed
+(async () => {
+    const pokemonPromises = [];
+    for (let pokemonIdNum = 1; pokemonIdNum < 152; pokemonIdNum++) {
+        pokemonPromises.push(getPokemon(pokemonIdNum));
+    }
+    await Promise.all(pokemonPromises);
+    createNotionPage();
+})();

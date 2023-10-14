@@ -34,6 +34,12 @@ const notion = new Client({
 
 const pokeArr = []
 
+function capitalizeFirst(name) {
+    const firstLetter = name.charAt(0)
+    const remainingName = name.slice(1)
+    return firstLetter.toUpperCase() + remainingName
+}
+
 async function getPokemon() {
     await axios.get('https://pokeapi.co/api/v2/pokemon/rayquaza')
         .then((poke) => {
@@ -41,7 +47,7 @@ async function getPokemon() {
 
 
             const pokemon = {
-                "name": poke.data.species.name,
+                "name": capitalizeFirst(poke.data.species.name),
                 "number": poke.data.id,
                 "hp": poke.data.stats[0].base_stat,
                 "height": poke.data.height,

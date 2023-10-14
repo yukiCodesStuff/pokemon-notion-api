@@ -1,9 +1,36 @@
 const axios = require('axios')
 const { Client } = require('@notionhq/client')
+require('dotenv').config()
+
+
+console.log(`***API_KEY: ${process.env.NOTION_KEY}***`)
+// console.log(process.env)
 
 const notion = new Client({
     auth: process.env.NOTION_KEY,
 });
+
+// (async () => {
+//     const response = await notion.search({
+//       query: 'External tasks',
+//       filter: {
+//         value: 'database',
+//         property: 'object'
+//       },
+//       sort: {
+//         direction: 'ascending',
+//         timestamp: 'last_edited_time'
+//       },
+//     });
+//     console.log(response);
+//   })();
+
+// (async () => {
+//     const databaseId = process.env.NOTION_DATABASE_ID;
+//     console.log("Fetching database")
+//     const response = await notion.databases.retrieve({ database_id: databaseId });
+//     console.log(response);
+// })();
 
 const pokeArr = []
 
@@ -11,6 +38,8 @@ async function getPokemon() {
     await axios.get('https://pokeapi.co/api/v2/pokemon/rayquaza')
         .then((poke) => {
             
+
+
             const pokemon = {
                 "name": poke.data.species.name,
                 "number": poke.data.id,
@@ -25,18 +54,23 @@ async function getPokemon() {
             }
 
             pokeArr.push(pokemon)
-            console.log(pokemon)
+            console.log(`Fetching ${pokemon.name} from PokeAPI`)
 
         })
         .catch((error) => {
             console.log(error)
         })
+
+        createNotionPage()
 }
 
 getPokemon()
 
 async function createNotionPage() {
     for (let pokemon of pokeArr) {
+
+        console.log("Sending data to Notion")
+
         const response = await notion.pages.create({
             "parent": {
                 "type": "database_id",
@@ -58,8 +92,31 @@ async function createNotionPage() {
                 },
                 "HP": {
                     "number": pokemon.hp
+                },
+                "Height": {
+                    "number": pokemon.height
+                },
+                "Weight": {
+                    "number": pokemon.weight
+                },
+                "Attack": {
+                    "number": pokemon.attack
+                },
+                "Defense": {
+                    "number": pokemon.defense
+                },
+                "Special Attack": {
+                    "number": pokemon['special-attack']
+                },
+                "Special Defense": {
+                    "number": pokemon['special-defense']
+                },
+                "Speed": {
+                    "number": pokemon.speed
                 }
             }
         })
+
+        console.log(response)
     }
 }
